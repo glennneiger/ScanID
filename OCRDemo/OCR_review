@@ -1,0 +1,177 @@
+Character Recognition
+
+**********************************************
+//About ios YUV format
+//save for future in case that i have time to write a review on that
+http://stackoverflow.com/questions/6189409/how-to-get-bytes-from-cmsamplebufferref-to-send-over-network
+http://stackoverflow.com/questions/4205191/how-to-grab-yuv-formatted-video-from-the-camera-display-it-and-process-it
+https://github.com/BradLarson/GPUImage/issues/2014
+https://github.com/BradLarson/GPUImage/blob/master/framework/Source/GPUImageVideoCamera.m
+https://www.raywenderlich.com/69855/image-processing-in-ios-part-1-raw-bitmap-modification
+http://stackoverflow.com/questions/6189409/how-to-get-bytes-from-cmsamplebufferref-to-send-over-network
+https://developer.apple.com/library/ios/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/TechniquesforReadingandWritingCustomFiles/TechniquesforReadingandWritingCustomFiles.html
+
+http://www.voidcn.com/blog/fanbird2008/article/p-6059141.html
+****************************
+//tmp possible useful sites
+http://stackoverflow.com/questions/1579631/converting-rgb-data-into-a-bitmap-in-objective-c-cocoa/1581805#1581805
+http://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html
+http://homepages.inf.ed.ac.uk/rbf/HIPR2/sobel.htm
+https://en.wikipedia.org/wiki/Artificial_neural_network
+http://felixniklas.com/imageprocessing/binarization
+https://en.wikipedia.org/wiki/Sobel_operator#Technical_details
+https://www.quora.com/What-is-Card-io-and-how-will-it-impact-the-mobile-payment-space
+http://rnd.azoft.com/optical-recognition-ios-application/
+http://stackoverflow.com/questions/10030631/what-is-the-best-core-image-filter-to-produce-black-and-white-effects
+
+************************************************
+keywords from xing:
+faster rcnn
+spatial transformer networks
+************************************************
+ios convert image to grey scale image
+http://stackoverflow.com/questions/1298867/convert-image-to-grayscale
+
+************************************************************
+ios convert image to binary image
+http://stackoverflow.com/questions/13247914/ocr-image-to-text
+
+********************************************************************
+Gradient Magnitude WIKI
+https://en.wikipedia.org/wiki/Gradient
+
+********************************************************************
+another way for ios convert image to binary image
+http://stackoverflow.com/questions/10030631/what-is-the-best-core-image-filter-to-produce-black-and-white-effects
+- (UIImage *)imageBlackAndWhite
+{
+        CIImage *beginImage = [CIImage imageWithCGImage:self.CGImage];
+
+            CIImage *blackAndWhite = [CIFilter filterWithName:@"CIColorControls" keysAndValues:kCIInputImageKey, beginImage, @"inputBrightness", [NSNumber numberWithFloat:0.0], @"inputContrast", [NSNumber numberWithFloat:1.1], @"inputSaturation", [NSNumber numberWithFloat:0.0], nil].outputImage;
+                CIImage *output = [CIFilter filterWithName:@"CIExposureAdjust" keysAndValues:kCIInputImageKey, blackAndWhite, @"inputEV", [NSNumber numberWithFloat:0.7], nil].outputImage; 
+
+                    CIContext *context = [CIContext contextWithOptions:nil];
+                        CGImageRef cgiimage = [context createCGImage:output fromRect:output.extent];
+                            //UIImage *newImage = [UIImage imageWithCGImage:cgiimage];
+                            UIImage *newImage = [UIImage imageWithCGImage:cgiimage scale:image.scale orientation:image.imageOrientation];
+                                CGImageRelease(cgiimage);
+
+                                    return newImage;
+}
+************************************************************************
+
+Algorithm for Identifying Barely Legible or Embossed Text in an Image
+http://rnd.azoft.com/optical-recognition-ios-application/
+keyword:
+Sobel operator  (edge detection)
+Hough transform
+Gradient descent
+
+************************************************************
+Canny Edge Detector
+
+The Process of Canny edge detection algorithm can be broken down to 5 different steps:
+
+    Apply Gaussian filter to smooth the image in order to remove the noise
+    Find the intensity gradients of the image
+    Apply non-maximum suppression to get rid of spurious response to edge detection
+    Apply double threshold to determine potential edges
+    Track edge by hysteresis: Finalize the detection of edges by suppressing all the other edges that are weak and not connected to strong edges.
+    
+    
+Gaussian Blur
+{ 1, 4, 7, 4, 1 },
+{ 4,16,26,16, 4 },
+{ 7,26,41,26, 7 },
+{ 4,16,26,16, 4 },
+{ 1, 4, 7, 4, 1 }}
+
+Sobel Operator
+    int gx[3][3]={ 
+                { -1, 0, 1 },
+                { -2, 0, 2 },
+                { -1, 0, 1 }};
+    int gy[3][3]={
+                {  1,  2,  1 },
+                {  0,  0,  0 },
+                { -1, -2, -1 }};
+
+Non-maximul suppression
+
+Non-maximum suppression is an edge thinning technique.
+
+Non-Maximum suppression is applied to "thin" the edge. After applying gradient calculation, the edge extracted from the gradient value is still quite blurred. With respect to criterion 3, there should only be one accurate response to the edge. Thus non-maximum suppression can help to suppress all the gradient values to 0 except the local maximal, which indicates location with the sharpest change of intensity value. The algorithm for each pixel in the gradient image is:
+
+Compare the edge strength of the current pixel with the edge strength of the pixel in the positive and negative gradient directions.
+If the edge strength of the current pixel is the largest compared to the other pixels in the mask with the same direction (i.e., the pixel that is pointing in the y direction, it will be compared to the pixel above and below it in the vertical axis), the value will be preserved. Otherwise, the value will be suppressed.
+In some implementations, the algorithm categorizes the continuous gradient directions into a small set of discrete directions, and then moves a 3x3 filter over the output of the previous step (that is, the edge strength and gradient directions). At every pixel, it suppresses the edge strength of the center pixel (by setting its value to 0) if its magnitude is not greater than the magnitude of the two neighbors in the gradient direction. For example,
+
+   if the rounded gradient angle is 0° (i.e. the edge is in the north–south direction) the point will be considered to be on the edge if its gradient magnitude is greater than the magnitudes at pixels in the east and west directions,
+   if the rounded gradient angle is 90° (i.e. the edge is in the east–west direction) the point will be considered to be on the edge if its gradient magnitude is greater than the magnitudes at pixels in the north and south directions,
+   if the rounded gradient angle is 135° (i.e. the edge is in the northeast–southwest direction) the point will be considered to be on the edge if its gradient magnitude is greater than the magnitudes at pixels in the north west and south east directions,
+   if the rounded gradient angle is 45° (i.e. the edge is in the north west–south east direction) the point will be considered to be on the edge if its gradient magnitude is greater than the magnitudes at pixels in the north east and south west directions.
+   In more accurate implementations, linear interpolation is used between the two neighbouring pixels that straddle the gradient direction. For example, if the gradient angle is between 45° and 90°, interpolation between gradients at the north and north east pixels will give one interpolated value, and interpolation between the south and south west pixels will give the other (using the conventions of last paragraph). The gradient magnitude at the central pixel must be greater than both of these for it to be marked as an edge.
+
+   Note that the sign of the direction is irrelevant, i.e. north–south is the same as south–north and so on.
+
+
+************************************************************
+
+
+Step 1. Convert the source image I to grayscale.
+
+Step 2. Detect edges in the grayscale image using the Sobel or similar operator. The resulting image we denote by Ie.
+
+Step 3. Perform binarization of Ie using Otsu's method. The resulting image we denote by Ib.
+
+Both Ie and Ib are used as input for the stroke width algorithm. Next, we need to perform the local binarization and voting steps:
+
+Step 4. Create a 2-dimensional array S with the same dimensions as I and fill it with zeroes.
+
+Step 5. Create a binary mask Win and binary mask Wout. Their dimensions should be Nin×Nin and Nout×Nout respectively. Nin and Nout values depend on the stroke width in the image and Nin is always less than or equal to Nout.
+
+Step 6. For every pixel Ie[i, j] that satisfies the condition Ib[i, b] = 1 we apply the Win mask centered on this pixel to the image and look for minimum and maximum values (Pmin, Pmax) among the pixels found within this mask.
+
+Step 7. The same pixel Ie[i, j] is then used to center the Wout mask and for every pixel falling into Wout we perform the transform: S[i+k, j+l] = S[i+k, j+l] + 1, if Ie[i+k, j+l] ≥ t(i,j), where k,l ≤ Nout / 2 and t(i, j) = (Pmax + Pmin) / 2.
+
+The resulting grayscale image stored in 2-dimensional array S will have suppressed background and intensified strokes that compose text. The image is suitable for additional binarization or further processing (segmentation of digits, etc.). Like Ie, S is a grayscale image but with decreased range of pixel brightness. The brightness range depends on the size of Win and Wout (smaller masks result in a smaller range).
+
+After some experiments, we discovered that the results can be improved if the binarization level used to produce Ib (step 3) is calculated as follows:
+
+Apply Gaussian blur to Ie after detecting edges with the Sobel operator. The resulting image we denote by Ig, and we'll continue to use Ie in step 6.
+Calculate the binarization level by processing the difference matrix abs(Ig-Ie) using Otsu's method.
+
+
+****************************************************************
+
+Optical Recognition of Credit Card Numbers in an iOS Application
+http://rnd.azoft.com/optical-recognition-ios-application/
+
+capturing a card image
+localizing — the search of a supposed area with text on the captured image
+segmentation — slitting the localized text to areas with a separate digit on each
+digits recognition
+
+
+
+
+
+*****************************************************************
+1.Feature Extraction
+
+The classi er could store a single prototype per character, The inevitably remaining variations are left for learning by statistical adaptation of the classfier.
+
+2. Character Learning
+
+The keys of printed character learning are essentially training set and classication adaptation to new characters and new fonts. The training set can be given either by user or extracted directly from document samples. 
+In the first case, the user selects the fonts and the samples to represent each character in each font and then guides the system to create models as in Anigbogu. Here  the user must use sucient number of samples in each font according to the dificulty of its recognition. However  it is dificult in an omnifont context to collect a training set of characters having the expected distribution of noise and pitch size. suggested parameterized models for imaging defects  based on a variety of theoretical arguments and empirical evidence. 
+In the second case  the idea is to generate the training set directly from document images chosen from a wide variety of fonts and image quality and to reflect the variability expected by the system. The problem here is that one is not sure that all valid characters are present.
+
+3. Contextual Processing
+
+Contextual processing attempts to overcome the short coming of decisions made on the basis of local properties and to extend the perception on relationships between characters into word.
+
+
+****************************************************************
+
+Artificial Neural Network(ANN)
